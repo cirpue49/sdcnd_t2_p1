@@ -66,9 +66,9 @@ void KalmanFilter::Update(Eigen::VectorXd z, Eigen::MatrixXd R_laser) {
   VectorXd z_pred = H_ * x_;
   VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
-  MatrixXd S = H_ * P_ * Ht + R_laser;
-  MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
+  MatrixXd S = H_ * PHt + R_laser;
+  MatrixXd Si = S.inverse();
   MatrixXd K = PHt * Si;
 
   //new estimate
@@ -90,7 +90,11 @@ VectorXd KalmanFilter::measure_f(const Eigen::VectorXd x) {
   float c1 = px*px+py*py;
   float c2 = sqrt(c1);
   float c3 = (c1*c2);
-  float c4 = atan(py/px);
+
+  float c4;
+  if (px == 0){c4 = 0;}
+  else{c4 = atan(py/px);}
+
   float c5 = px*vx + py*vy;
 
   pred_ << c2, c4, c5/c2;
@@ -108,9 +112,9 @@ void KalmanFilter::UpdateEKF(Eigen::VectorXd z,  Eigen::MatrixXd R_radar) {
   MatrixXd Hj_ = tools.CalculateJacobian(x_);
   VectorXd y = z - pred;
   MatrixXd Ht = Hj_.transpose();
-  MatrixXd S = Hj_ * P_ * Ht + R_radar ;
-  MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
+  MatrixXd S = Hj_ * PHt + R_radar ;
+  MatrixXd Si = S.inverse();
   MatrixXd K = PHt * Si;
 
   //new estimate
